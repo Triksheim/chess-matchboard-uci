@@ -1,0 +1,8 @@
+{
+  "engines": [
+    {
+      "name": "Stockfish",
+      "path": "./stockfish/uci.exe"
+    }
+  ]
+}

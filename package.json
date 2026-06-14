@@ -1,0 +1,15 @@
+{
+  "name": "chess-matchboard-uci",
+  "version": "0.1.0",
+  "description": "Local UCI chess matchboard for human and engine games.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "keywords": [
+    "chess",
+    "uci",
+    "gui"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UCI Chess Matchboard</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="board-area" aria-label="Chess board">
+        <div class="topbar">
+          <div>
+            <h1>UCI Chess Matchboard</h1>
+            <p id="statusLine">Create a game to begin.</p>
+          </div>
+        </div>
+        <div class="board-wrap">
+          <div class="board-status-row">
+            <div class="turn-pill" id="turnPill">Idle</div>
+          </div>
+          <div class="files top-files" aria-hidden="true">
+            <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+          </div>
+          <div class="board-row">
+            <div class="ranks" aria-hidden="true">
+              <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+            <div id="board" class="board" role="grid" aria-label="Chess board"></div>
+            <div class="ranks right-ranks" aria-hidden="true">
+              <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+            </div>
+          </div>
+          <div class="files" aria-hidden="true">
+            <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+          </div>
+        </div>
+        <div class="fen-bar">
+          <span>FEN</span>
+          <code id="fenText">-</code>
+          <button id="copyFen" class="icon-button copy-button" type="button" aria-label="Copy FEN" title="Copy FEN">
+            <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 9h10v10H9z"></path>
+              <path d="M5 15H4V4h11v1"></path>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <aside class="side-panel" aria-label="Game controls">
+        <div class="sidebar-actions">
+          <button id="themeToggle" class="icon-button theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false" title="Dark mode">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.2 15.1a7.2 7.2 0 0 1-9.3-9.3 7.8 7.8 0 1 0 9.3 9.3Z"></path>
+            </svg>
+          </button>
+        </div>
+        <section class="panel-section">
+          <div class="section-title">Game</div>
+          <div id="gameSetup">
+            <div class="player-type-grid" aria-label="Player types">
+              <div class="player-type-row">
+                <span>White</span>
+                <div class="slide-toggle" role="group" aria-label="White player type">
+                  <button id="whiteHuman" type="button" data-player-type="human">Human</button>
+                  <button id="whiteEngine" class="active" type="button" data-player-type="engine">Engine</button>
+                </div>
+              </div>
+              <div class="player-type-row">
+                <span>Black</span>
+                <div class="slide-toggle" role="group" aria-label="Black player type">
+                  <button id="blackHuman" type="button" data-player-type="human">Human</button>
+                  <button id="blackEngine" class="active" type="button" data-player-type="engine">Engine</button>
+                </div>
+              </div>
+            </div>
+            <label class="field">
+              <span>Start FEN</span>
+              <input id="startFen" type="text" placeholder="Leave empty for start position">
+            </label>
+            <div class="button-row">
+              <button id="newGame" class="primary" type="button">New Game</button>
+              <button id="flipBoard" type="button" title="Flip board">↕</button>
+            </div>
+          </div>
+          <div id="gameActive" class="game-active" hidden>
+            <div class="game-side-row">
+              <span>White</span>
+              <strong id="activeWhiteRole">-</strong>
+            </div>
+            <div class="game-side-row">
+              <span>Black</span>
+              <strong id="activeBlackRole">-</strong>
+            </div>
+            <div class="button-row">
+              <button id="startStop" class="primary" type="button">Stop</button>
+              <button id="gameSetupBack" type="button">Setup</button>
+              <button id="activeFlipBoard" type="button" title="Flip board">↕</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="promotionPanel" class="panel-section" hidden>
+          <div class="section-title">Promotion</div>
+          <div class="piece-select" id="promotionSelect" aria-label="Promotion piece">
+            <button class="active" data-promotion="q" type="button">Q</button>
+            <button data-promotion="r" type="button">R</button>
+            <button data-promotion="b" type="button">B</button>
+            <button data-promotion="n" type="button">N</button>
+          </div>
+        </section>
+
+        <section id="engineSettingsPanel" class="panel-section">
+          <div class="section-heading">
+            <div class="section-title">Engines</div>
+            <button id="engineToggle" class="mini-button" type="button" aria-expanded="false" aria-controls="engineDetails">▾</button>
+          </div>
+          <div class="engine-summary" aria-live="polite">
+            <div class="engine-summary-row">
+              <span>White</span>
+              <strong id="whiteEngineSummary">-</strong>
+            </div>
+            <div class="engine-summary-row">
+              <span>Black</span>
+              <strong id="blackEngineSummary">-</strong>
+            </div>
+          </div>
+          <div id="engineDetails" class="engine-details" hidden>
+            <div class="field">
+              <span>White engine</span>
+              <div class="preset-picker">
+                <select id="whitePreset"></select>
+                <button id="whiteRemovePreset" class="icon-button preset-remove" type="button" aria-label="Remove selected white preset" title="Remove preset">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 7h12"></path>
+                    <path d="M9 7V5h6v2"></path>
+                    <path d="M8 9l1 10h6l1-10"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="path-picker">
+                <input id="whitePath" type="text" placeholder="/path/to/uci-engine">
+                <button id="whiteBrowse" class="icon-button browse-button" type="button" aria-label="Select white engine path" title="Select engine path">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 7h7l2 2h9v10H3z"></path>
+                    <path d="M3 7V5h6l2 2"></path>
+                  </svg>
+                </button>
+                <button id="whiteSavePreset" class="icon-button preset-save" type="button" aria-label="Save white engine preset" title="Save preset">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="engine-limits">
+              <label class="field">
+                <span>White depth</span>
+                <input id="whiteDepth" type="number" min="1" max="30" value="5">
+              </label>
+              <label class="field">
+                <span>White min ms</span>
+                <input id="whiteMinTime" type="number" min="0" value="0">
+              </label>
+              <label class="field">
+                <span>White max ms</span>
+                <input id="whiteMaxTime" type="number" min="0" value="5000">
+              </label>
+            </div>
+            <div class="field">
+              <span>Black engine</span>
+              <div class="preset-picker">
+                <select id="blackPreset"></select>
+                <button id="blackRemovePreset" class="icon-button preset-remove" type="button" aria-label="Remove selected black preset" title="Remove preset">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 7h12"></path>
+                    <path d="M9 7V5h6v2"></path>
+                    <path d="M8 9l1 10h6l1-10"></path>
+                  </svg>
+                </button>
+              </div>
+              <div class="path-picker">
+                <input id="blackPath" type="text" placeholder="/path/to/uci-engine">
+                <button id="blackBrowse" class="icon-button browse-button" type="button" aria-label="Select black engine path" title="Select engine path">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 7h7l2 2h9v10H3z"></path>
+                    <path d="M3 7V5h6l2 2"></path>
+                  </svg>
+                </button>
+                <button id="blackSavePreset" class="icon-button preset-save" type="button" aria-label="Save black engine preset" title="Save preset">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="engine-limits">
+              <label class="field">
+                <span>Black depth</span>
+                <input id="blackDepth" type="number" min="1" max="30" value="5">
+              </label>
+              <label class="field">
+                <span>Black min ms</span>
+                <input id="blackMinTime" type="number" min="0" value="0">
+              </label>
+              <label class="field">
+                <span>Black max ms</span>
+                <input id="blackMaxTime" type="number" min="0" value="5000">
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section id="movesPanel" class="panel-section grow moves-panel">
+          <div class="section-heading">
+            <div class="section-title">Moves</div>
+            <button id="copyMoves" class="icon-button copy-button" type="button" aria-label="Copy moves" title="Copy moves">
+              <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 9h10v10H9z"></path>
+                <path d="M5 15H4V4h11v1"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="moveList" class="move-list" aria-live="polite"></div>
+        </section>
+
+        <section id="engineOutputPanel" class="panel-section engine-panel">
+          <div class="section-title">Engine</div>
+          <pre id="engineLog" class="log"></pre>
+        </section>
+      </aside>
+    </main>
+
+    <script src="/chess.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
